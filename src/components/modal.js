@@ -3,7 +3,7 @@ function onPopupKeyDown(evt) {
         const openedPopup = Array.from(document.querySelectorAll('.popup')).find((popup) =>
             popup.classList.contains('popup_is-opened')
         );
-        openedPopup.classList.remove('popup_is-opened');
+        closePopup(openedPopup);
     }
 }
 
