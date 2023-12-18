@@ -87,7 +87,6 @@ function initPage() {
         localStorage.setItem('profile_name', profileData.name);
         renderCards(cardsData);
         renderProfile(profileData);
-        console.log(cardsData);
     });
 }
 
