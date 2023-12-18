@@ -1,24 +1,39 @@
 import '../pages/index.css';
-import { initialCards } from './cards';
 import { closePopup, onOverlayClick, openPopup } from './modal';
-import { createCard, deleteCard, onLikeHandle } from './card';
+import { createCard, removeCard, onLikeHandle } from './card';
+import { clearValidation, enableValidation } from './validation';
+import { addCard, editProfile, fetchCards, fetchUser } from './api';
 
 const editPopupTrigger = document.querySelector('.profile__edit-button');
 const editPopup = document.querySelector('.popup_type_edit');
 const newCardPopup = document.querySelector('.popup_type_new-card');
+const avatarPopup = document.querySelector('.popup_type_avatar');
 const newCardPopupTrigger = document.querySelector('.profile__add-button');
 const cardList = document.querySelector('.places__list');
 const forms = document.forms;
 const profileForm = forms['edit-profile'];
 const cardForm = forms['new-place'];
+const avatarForm = forms['avatar'];
+
 const nameNode = document.querySelector('.profile__title');
 const roleNode = document.querySelector('.profile__description');
+const avatarNodeWrapper = document.querySelector('.profile__image-wrapper');
+const avatarNode = document.querySelector('.profile__image');
 const imagePopupImage = document.querySelector('.popup__image');
 const imagePopupCaption = document.querySelector('.popup__caption');
 const inputNameNewCardPopup = document.querySelector('input[name=place-name]');
 const inputLinkNewCardPopup = document.querySelector('input[name=link]');
 const buttonsClosePopup = document.querySelectorAll('.popup__close');
 const overlaysPopup = document.querySelectorAll('.popup');
+
+const validationConfig = {
+    formSelector: '.popup__form',
+    inputSelector: '.popup__input',
+    submitButtonSelector: '.popup__button',
+    inactiveButtonClass: 'popup__button_disabled',
+    inputErrorClass: 'popup__input_type_error',
+    errorClass: 'popup__error_visible',
+};
 
 export function initDefaultFormValues(formNode, inputNamesArr, valuesObj) {
     inputNamesArr.forEach((inputName) => {
@@ -41,41 +56,105 @@ function initCardPopup({ imageUrl, title }) {
     imagePopupCaption.textContent = title;
 }
 
+function renderProfile(profileData) {
+    nameNode.textContent = profileData.name;
+    roleNode.textContent = profileData.about;
+    avatarNode.src = profileData.avatar;
+    avatarNode.alt = profileData.name;
+}
+
+function renderCards(cardsData) {
+    if (cardList.children) {
+        cardList.replaceChildren();
+    }
+
+    cardsData.forEach((card) => {
+        cardList.append(
+            createCard(
+                card,
+                removeCard,
+                openPopup,
+                onLikeHandle,
+                initCardPopup,
+                localStorage.getItem('profile_name')
+            )
+        );
+    });
+}
+
+function initPage() {
+    Promise.all([fetchUser(), fetchCards()]).then(([profileData, cardsData]) => {
+        localStorage.setItem('profile_name', profileData.name);
+        renderCards(cardsData);
+        renderProfile(profileData);
+        console.log(cardsData);
+    });
+}
+
 function onProfileFormSubmit(evt, closeCb) {
     evt.preventDefault();
-    nameNode.textContent = document.querySelector('input[name=name]').value;
-    roleNode.textContent = document.querySelector('input[name=description]').value;
-    closeCb();
+    closeCb({
+        name: document.querySelector('input[name=name]').value,
+        about: document.querySelector('input[name=description]').value,
+    });
 }
 
 function onCardFormSubmit(evt, closeCb) {
     evt.preventDefault();
-    cardList.prepend(
-        createCard(
-            { imageUrl: inputLinkNewCardPopup.value, title: inputNameNewCardPopup.value },
-            deleteCard,
-            openPopup,
-            onLikeHandle,
-            initCardPopup
-        )
-    );
-    closeCb();
+    closeCb({
+        name: inputNameNewCardPopup.value,
+        link: inputLinkNewCardPopup.value,
+    });
 }
 
 profileForm.addEventListener('submit', (evt) => {
-    onProfileFormSubmit(evt, () => closePopup(editPopup));
+    onProfileFormSubmit(evt, (newProfile) => {
+        editProfile(newProfile)
+            .then((res) => {
+                renderProfile(res);
+            })
+            .then(() => {
+                closePopup(editPopup);
+            });
+    });
 });
 
 cardForm.addEventListener('submit', (evt) => {
-    onCardFormSubmit(evt, () => closePopup(newCardPopup));
+    onCardFormSubmit(evt, (newCard) => {
+        addCard(newCard)
+            .then((card) => {
+                cardList.append(
+                    createCard(
+                        card,
+                        removeCard,
+                        openPopup,
+                        onLikeHandle,
+                        initCardPopup,
+                        localStorage.getItem('profile_name')
+                    )
+                );
+            })
+            .then(() => {
+                closePopup(newCardPopup);
+            });
+    });
 });
 
 editPopupTrigger.addEventListener('click', () => {
     openPopup(editPopup);
+    clearValidation(profileForm, validationConfig);
     initProfileForm();
 });
 
-newCardPopupTrigger.addEventListener('click', () => openPopup(newCardPopup));
+avatarNodeWrapper.addEventListener('click', () => {
+    openPopup(avatarPopup);
+    clearValidation(avatarForm, validationConfig);
+});
+
+newCardPopupTrigger.addEventListener('click', () => {
+    openPopup(newCardPopup);
+    clearValidation(cardForm, validationConfig);
+});
 
 buttonsClosePopup.forEach((closeButton) => {
     closeButton.addEventListener('click', () => {
@@ -87,14 +166,5 @@ overlaysPopup.forEach((overlay) => {
     overlay.addEventListener('click', onOverlayClick);
 });
 
-initialCards.forEach((card) => {
-    cardList.append(
-        createCard(
-            { imageUrl: card.link, title: card.name },
-            deleteCard,
-            openPopup,
-            onLikeHandle,
-            initCardPopup
-        )
-    );
-});
+enableValidation(validationConfig);
+initPage();
