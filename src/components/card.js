@@ -29,12 +29,12 @@ export function createCard(card, deleteCb, openPopupCb, likeCb, cardClickCb, car
 
     imagePopupTrigger.addEventListener('click', () => {
         openPopupCb(imagePopup);
-        cardClickCb({ link, name });
+        cardClickCb({ imageUrl: link, title: name });
     });
 
     likeButton.addEventListener('click', (evt) => likeCb(evt.target, _id, likeCount));
-    cardElement.querySelector('.card__image').src = link;
-    cardElement.querySelector('.card__image').alt = name;
+    imagePopupTrigger.src = link;
+    imagePopupTrigger.alt = name;
     cardElement.querySelector('.card__title').textContent = name;
     likeCount.textContent = likes.length;
 

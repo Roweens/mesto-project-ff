@@ -35,27 +35,32 @@ function toggleButtonState(inputList, buttonElement, validationConfig) {
 }
 
 const checkInputValidity = (formElement, inputElement, validationConfig) => {
+    const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
+
     if (inputElement.validity.patternMismatch) {
         inputElement.setCustomValidity(inputElement.dataset.errorMessage);
     } else {
         inputElement.setCustomValidity('');
     }
     if (!inputElement.validity.valid) {
-        showInputError(formElement, inputElement, inputElement.validationMessage, validationConfig);
+        showInputError(
+            inputElement,
+            inputElement.validationMessage,
+            errorElement,
+            validationConfig
+        );
     } else {
-        hideInputError(formElement, inputElement, validationConfig);
+        hideInputError(inputElement, errorElement, validationConfig);
     }
 };
 
-const showInputError = (formElement, inputElement, errorMessage, validationConfig) => {
-    const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
+const showInputError = (inputElement, errorMessage, errorElement, validationConfig) => {
     inputElement.classList.add(validationConfig.inputErrorClass);
     errorElement.textContent = errorMessage;
     errorElement.classList.add(validationConfig.errorClass);
 };
 
-const hideInputError = (formElement, inputElement, validationConfig) => {
-    const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
+const hideInputError = (inputElement, errorElement, validationConfig) => {
     inputElement.classList.remove(validationConfig.inputErrorClass);
     errorElement.classList.remove(validationConfig.errorClass);
     errorElement.textContent = '';

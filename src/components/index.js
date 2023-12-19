@@ -2,7 +2,7 @@ import '../pages/index.css';
 import { closePopup, onOverlayClick, openPopup } from './modal';
 import { createCard, removeCard, onLikeHandle } from './card';
 import { clearValidation, enableValidation } from './validation';
-import { addCard, editProfile, fetchCards, fetchUser } from './api';
+import { addCard, editProfile, fetchCards, fetchUser, updateAvatar } from './api';
 
 const editPopupTrigger = document.querySelector('.profile__edit-button');
 const editPopup = document.querySelector('.popup_type_edit');
@@ -14,7 +14,6 @@ const forms = document.forms;
 const profileForm = forms['edit-profile'];
 const cardForm = forms['new-place'];
 const avatarForm = forms['avatar'];
-
 const nameNode = document.querySelector('.profile__title');
 const roleNode = document.querySelector('.profile__description');
 const avatarNodeWrapper = document.querySelector('.profile__image-wrapper');
@@ -98,6 +97,13 @@ function onProfileFormSubmit(evt, closeCb) {
     });
 }
 
+function onAvatarFormSubmit(evt, closeCb) {
+    evt.preventDefault();
+    closeCb({
+        avatar: document.querySelector('input[name=avatar]').value,
+    });
+}
+
 function onCardFormSubmit(evt, closeCb) {
     evt.preventDefault();
     closeCb({
@@ -106,23 +112,37 @@ function onCardFormSubmit(evt, closeCb) {
     });
 }
 
+function setButtonLoading(buttonElement) {
+    buttonElement.textContent = buttonElement.textContent.concat('...');
+}
+
+function removeButtonLoading(buttonElement) {
+    buttonElement.textContent = buttonElement.textContent.replace('...', '');
+}
+
 profileForm.addEventListener('submit', (evt) => {
+    const submitButton = profileForm.querySelector('.popup__button');
     onProfileFormSubmit(evt, (newProfile) => {
+        setButtonLoading(submitButton);
         editProfile(newProfile)
             .then((res) => {
                 renderProfile(res);
             })
             .then(() => {
+                removeButtonLoading(submitButton);
                 closePopup(editPopup);
             });
     });
 });
 
 cardForm.addEventListener('submit', (evt) => {
+    const submitButton = cardForm.querySelector('.popup__button');
+
     onCardFormSubmit(evt, (newCard) => {
+        setButtonLoading(submitButton);
         addCard(newCard)
             .then((card) => {
-                cardList.append(
+                cardList.prepend(
                     createCard(
                         card,
                         removeCard,
@@ -134,7 +154,27 @@ cardForm.addEventListener('submit', (evt) => {
                 );
             })
             .then(() => {
+                removeButtonLoading(submitButton);
                 closePopup(newCardPopup);
+                inputNameNewCardPopup.value = '';
+                inputLinkNewCardPopup.value = '';
+            });
+    });
+});
+
+avatarForm.addEventListener('submit', (evt) => {
+    const submitButton = avatarForm.querySelector('.popup__button');
+
+    onAvatarFormSubmit(evt, (avatarLink) => {
+        setButtonLoading(submitButton);
+        updateAvatar(avatarLink)
+            .then(() => fetchUser())
+            .then((profileData) => {
+                renderProfile(profileData);
+            })
+            .then(() => {
+                removeButtonLoading(submitButton);
+                closePopup(avatarPopup);
             });
     });
 });

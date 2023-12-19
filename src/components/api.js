@@ -17,10 +17,16 @@ function responseHandler(res) {
     return Promise.reject(`Ошибка: ${res.status}`);
 }
 
+function errorHandler(err) {
+    console.log(err);
+}
+
 export async function fetchUser() {
     return await fetch(`${config.baseUrl}/users/me`, {
         headers: config.headers,
-    }).then(responseHandler);
+    })
+        .then(responseHandler)
+        .catch(errorHandler);
 }
 
 export async function updateAvatar(link) {
@@ -28,13 +34,17 @@ export async function updateAvatar(link) {
         method: 'PATCH',
         headers: config.headers,
         body: JSON.stringify(link),
-    }).then(responseHandler);
+    })
+        .then(responseHandler)
+        .catch(errorHandler);
 }
 
 export async function fetchCards() {
     return await fetch(`${config.baseUrl}/cards`, {
         headers: config.headers,
-    }).then(responseHandler);
+    })
+        .then(responseHandler)
+        .catch(errorHandler);
 }
 
 export async function editProfile(newProfile) {
@@ -42,7 +52,9 @@ export async function editProfile(newProfile) {
         method: 'PATCH',
         headers: config.headers,
         body: JSON.stringify(newProfile),
-    }).then(responseHandler);
+    })
+        .then(responseHandler)
+        .catch(errorHandler);
 }
 
 export async function addCard(newCard) {
@@ -50,26 +62,35 @@ export async function addCard(newCard) {
         method: 'POST',
         headers: config.headers,
         body: JSON.stringify(newCard),
-    }).then(responseHandler);
+    })
+        .then(responseHandler)
+        .catch(errorHandler);
 }
 
 export async function deleteCard(cardId) {
     return await fetch(`${config.baseUrl}/cards/${cardId}`, {
         method: 'DELETE',
         headers: config.headers,
-    }).then(responseHandler);
+    })
+        .then(responseHandler)
+        .catch(errorHandler);
 }
 
 export async function addLike(cardId) {
-    return await fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
+    const res = await fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
         method: 'PUT',
         headers: config.headers,
-    }).then(responseHandler);
+    })
+        .then(responseHandler)
+        .catch(errorHandler);
+    return res.json();
 }
 
 export async function deleteLike(cardId) {
     return await fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
         method: 'DELETE',
         headers: config.headers,
-    }).then(responseHandler);
+    })
+        .then(responseHandler)
+        .catch(errorHandler);
 }
