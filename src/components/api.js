@@ -77,13 +77,12 @@ export async function deleteCard(cardId) {
 }
 
 export async function addLike(cardId) {
-    const res = await fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
+    return await fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
         method: 'PUT',
         headers: config.headers,
     })
         .then(responseHandler)
         .catch(errorHandler);
-    return res.json();
 }
 
 export async function deleteLike(cardId) {
