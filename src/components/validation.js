@@ -29,9 +29,13 @@ function toggleButtonState(inputList, buttonElement, validationConfig) {
         buttonElement.classList.add(validationConfig.inactiveButtonClass);
         buttonElement.disabled = true;
     } else {
-        buttonElement.classList.remove(validationConfig.inactiveButtonClass);
-        buttonElement.disabled = false;
+        disableButton(buttonElement, validationConfig);
     }
+}
+
+function disableButton(buttonElement, validationConfig) {
+    buttonElement.classList.remove(validationConfig.inactiveButtonClass);
+    buttonElement.disabled = false;
 }
 
 const checkInputValidity = (formElement, inputElement, validationConfig) => {
@@ -79,6 +83,10 @@ export function clearValidation(formElement, validationConfig) {
     buttonElement.classList.remove(validationConfig.inactiveButtonClass);
 
     toggleButtonState(inputList, buttonElement, validationConfig);
+
+    formElement.addEventListener('reset', () => {
+        disableButton(buttonElement, validationConfig);
+    });
 
     inputList.forEach((inputElement) => {
         const errorElement = formElement.querySelector(`.${inputElement.id}-error`);

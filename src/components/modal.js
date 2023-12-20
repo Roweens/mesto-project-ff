@@ -1,15 +1,8 @@
+const popups = document.querySelectorAll('.popup');
+
 function onPopupKeyDown(evt) {
     if (evt.key === 'Escape') {
-        const openedPopup = Array.from(document.querySelectorAll('.popup')).find((popup) =>
-            popup.classList.contains('popup_is-opened')
-        );
-        closePopup(openedPopup);
-    }
-}
-
-export function onOverlayClick(evt) {
-    if (evt.target.classList.contains('popup')) {
-        closePopup(evt.target);
+        popups.forEach(closePopup);
     }
 }
 
